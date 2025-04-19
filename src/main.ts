@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, screen, dialog } from "electron";
 import * as path from "node:path";
 import started from "electron-squirrel-startup";
-import { loadCookiesFromFile, pollForCookies } from "./utils/cookie";
+import { loadCookiesFromFile, pollForCookies, saveCookiesToFile, clearCookies } from "./utils/cookie";
 import { connectWS } from "./utils/ws";
 import { toMessageData } from "tiny-bilibili-ws";
 
@@ -77,6 +77,11 @@ function createQueueWindow() {
       { hash: "/queue" }
     );
   }
+
+  // Handle window close event
+  queueWindow.on("closed", () => {
+    app.quit();
+  });
 }
 
 // This method will be called when Electron has finished
@@ -107,50 +112,72 @@ app.on("window-all-closed", () => {
 // code. You can also put them in separate files and import them here.
 ipcMain.handle("connect", async (event, url, targetCookie, roomId) => {
   let cookies = await loadCookiesFromFile();
-  if (!cookies) {
-    const result = await pollForCookies(url, targetCookie);
-    if (result) {
-      cookies = result;
-    } else {
-      return false;
-    }
-  }
-
-  console.log("cookies", cookies);
+  let shouldRetry = false;
 
   try {
-    const live = await connectWS(roomId, cookies);
-
-    live.on("DANMU_MSG", (danmu) => {
-      const data = toMessageData(danmu);
-      const content: string = data.info[1] || "", // 弹幕内容
-        uid: number = data.info[2][0] || 0, // 用户ID
-        username: string = data.info[2][1] || "未知", // 用户名
-        face: string =
-          data.info[0][15].user.base.face ||
-          "https://i0.hdslb.com/bfs/face/member/noface.jpg", // 用户头像
-        guardLevel: number = data.info[3][0] || 0; // 用户大航海等级
-      const medalInfo: any = data.info[3] || [];
-      const medalLevel: number = medalInfo[3] === roomId ? medalInfo[0] : 0;
-      if (import.meta.env.DEV) {
-        console.log(data);
-      }
-      event.sender.send("live", {
-        cmd: data.cmd,
-        content,
-        uid,
-        username,
-        face,
-        guardLevel,
-        medalLevel,
-      });
-    });
-
-    return true;
+    if (cookies) {
+      // 如果cookie存在，直接尝试连接
+      const live = await connectWS(roomId, cookies);
+      setupLiveListener(live, event, roomId);
+      return true;
+    }
+    shouldRetry = true;
   } catch (error) {
-    throw error;
+    console.error("Connection failed with existing cookies:", error);
+    // 连接失败，清除cookie并重试
+    await clearCookies();
+    shouldRetry = true;
+  }
+
+  if (shouldRetry) {
+    // 重新获取cookie
+    const result = await pollForCookies(url, targetCookie);
+    if (!result) {
+      return false;
+    }
+    cookies = result;
+
+    try {
+      const live = await connectWS(roomId, cookies);
+      setupLiveListener(live, event, roomId);
+      // 连接成功后保存cookie
+      await saveCookiesToFile(cookies);
+      return true;
+    } catch (error) {
+      console.error("Connection failed after getting new cookies:", error);
+      await clearCookies();
+      throw error;
+    }
   }
 });
+
+// 设置直播监听器的辅助函数
+function setupLiveListener(live: any, event: any, roomId: number) {
+  live.on("DANMU_MSG", (danmu: any) => {
+    const data = toMessageData(danmu);
+    const content: string = data.info[1] || "", // 弹幕内容
+      uid: number = data.info[2][0] || 0, // 用户ID
+      username: string = data.info[2][1] || "未知", // 用户名
+      face: string =
+        data.info[0][15].user.base.face ||
+        "https://i0.hdslb.com/bfs/face/member/noface.jpg", // 用户头像
+      guardLevel: number = data.info[3][0] || 0; // 用户大航海等级
+    const medalInfo: any = data.info[3] || [];
+    const medalLevel: number = medalInfo[3] === roomId ? medalInfo[0] : 0;
+    if (import.meta.env.DEV) {
+      console.log(data);
+    }
+    event.sender.send("live", {
+      cmd: data.cmd,
+      content,
+      uid,
+      username,
+      face,
+      guardLevel,
+      medalLevel,
+    });
+  });
+}
 
 // Handle queue window toggle
 ipcMain.on("toggle-queue-window", (_, visible: boolean) => {

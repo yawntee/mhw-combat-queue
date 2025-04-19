@@ -16,10 +16,7 @@ const PAUSE_DURATION = 3000 // 2 seconds
 let animationFrameId: number | null = null
 
 const getMonsterImage = computed(() => (content: string): string => {
-  const monster = monsters.value.find((m: Monster) =>
-    content.includes(m.name) ||
-    (m.aliases && m.aliases.some((alias: string) => content.includes(alias)))
-  )
+  const monster = monsters.value.find((m: Monster) => m.name === content)
   return monster?.image || DefaultMonsterImage
 })
 

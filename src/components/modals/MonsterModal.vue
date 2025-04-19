@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
-import { useMessage } from 'naive-ui'
+import { useMessage, type UploadFileInfo } from 'naive-ui'
 import { type Monster } from '../../types'
 import { db } from '../../utils/db'
 import { imageToBase64, base64ToImage } from '../../utils/image'
@@ -8,6 +8,7 @@ import { AddSharp } from '@vicons/ionicons5'
 import { toRaw } from 'vue'
 
 const props = defineProps<{
+  monsters: Monster[]
   monster?: Monster
 }>()
 
@@ -26,7 +27,7 @@ const editingMonster = reactive({
   image: null as File | null
 })
 
-const handleUpdateImage = async ({ file }: any) => {
+const handleUpdateImage = async ({ file }: { file: UploadFileInfo }) => {
   if (file.file) {
     editingMonster.image = file.file
   }
@@ -36,6 +37,10 @@ const handleUpdateImage = async ({ file }: any) => {
 const saveMonster = async () => {
   if (!editingMonster.name.trim()) {
     $message.error('请输入怪物名称')
+    return
+  }
+  if (!props.monster && props.monsters.some(m => m.name === editingMonster.name)) {
+    $message.error('怪物名称已存在')
     return
   }
 
@@ -63,7 +68,7 @@ const saveMonster = async () => {
     }
     // 添加新的怪物
     await db.addMonster(monster)
-    
+
     const updatedMonsters = await db.getAllMonsters()
     emit('update:monsters', updatedMonsters)
     $message.success(props.monster ? '更新成功' : '添加成功')
@@ -110,4 +115,4 @@ watch(show, (newVal) => {
       </n-flex>
     </n-form>
   </n-modal>
-</template> 
+</template>

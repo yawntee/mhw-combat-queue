@@ -1,5 +1,5 @@
-import { toRaw } from 'vue'
-import type { QueueConfig, QueueItem, Monster } from '../types'
+import { cloneDeep } from 'lodash'
+import type { Monster, QueueConfig, QueueItem } from '../types'
 
 const QUEUE_CHANNEL = 'mhw-queue-channel'
 const CONFIG_CHANNEL = 'mhw-config-channel'
@@ -11,25 +11,25 @@ export const monsterChannel = new BroadcastChannel(MONSTER_CHANNEL)
 
 export const broadcastQueue = (queue: QueueItem[]) => {
   try {
-    queueChannel.postMessage({ type: 'update', data: toRaw(queue) })
+    queueChannel.postMessage({ type: 'update', data: cloneDeep(queue) })
   } catch (error) {
-    console.error('Failed to broadcast queue:', error)
+    console.error('Failed to broadcast queue:', error, cloneDeep(queue))
   }
 }
 
 export const broadcastConfig = (config: QueueConfig) => {
   try {
-    configChannel.postMessage({ type: 'update', data: toRaw(config) })
+    configChannel.postMessage({ type: 'update', data: cloneDeep(config) })
   } catch (error) {
-    console.error('Failed to broadcast config:', error)
+    console.error('Failed to broadcast config:', error, cloneDeep(config))
   }
 }
 
 export const broadcastMonsters = (monsters: Monster[]) => {
   try {
-    monsterChannel.postMessage({ type: 'update', data: toRaw(monsters) })
+    monsterChannel.postMessage({ type: 'update', data: cloneDeep(monsters) })
   } catch (error) {
-    console.error('Failed to broadcast monsters:', error)
+    console.error('Failed to broadcast monsters:', error, cloneDeep(monsters))
   }
 }
 

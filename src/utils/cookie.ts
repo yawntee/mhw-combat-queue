@@ -133,3 +133,26 @@ export async function loadCookiesFromFile(
     });
   });
 }
+
+/**
+ * 清除保存的Cookie文件
+ * @param filePath 文件路径，默认为用户数据目录下的cookies.txt
+ * @returns Promise<void>
+ */
+export async function clearCookies(filePath?: string): Promise<void> {
+  const targetPath = filePath || 'cookies.txt';
+  
+  if (!fs.existsSync(targetPath)) {
+    return;
+  }
+
+  return new Promise((resolve, reject) => {
+    fs.unlink(targetPath, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+}

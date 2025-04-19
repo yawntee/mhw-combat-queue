@@ -2,11 +2,22 @@
 import { AddSharp, CreateOutline, DownloadOutline, EllipsisVertical, FolderOpenOutline, TrashOutline } from '@vicons/ionicons5'
 import { NIcon, useMessage } from 'naive-ui'
 import pako from 'pako'
-import { h } from 'vue'
+import { h, ref, computed } from 'vue'
 import { type Monster } from '../../types'
 import { db } from '../../utils/db'
 
 const monsters = defineModel<Monster[]>('monsters')
+const searchKeyword = ref('')
+
+const filteredMonsters = computed(() => {
+  if (!searchKeyword.value) return monsters.value
+  const keyword = searchKeyword.value.toLowerCase()
+  return monsters.value?.filter(monster => {
+    const nameMatch = monster.name.toLowerCase().includes(keyword)
+    const aliasMatch = monster.aliases?.some(alias => alias.toLowerCase().includes(keyword))
+    return nameMatch || aliasMatch
+  }) || []
+})
 
 const emit = defineEmits<{
   (e: 'edit', monster?: Monster): void
@@ -131,7 +142,7 @@ const handleDropdownSelect = (key: string) => {
 </script>
 
 <template>
-  <n-card title="怪物管理" class="bg-white rounded-lg shadow" content-style="height: 0; flex: 1;">
+  <n-card title="怪物管理" class="bg-white rounded-lg shadow" content-style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
     <template #header-extra>
       <n-flex :wrap="false">
         <n-button type="primary" size="small" @click="$emit('edit')">
@@ -166,28 +177,39 @@ const handleDropdownSelect = (key: string) => {
         </n-dropdown>
       </n-flex>
     </template>
-    <n-scrollbar class="mt-4" style="hei">
-      <n-flex vertical>
-        <div v-for="(monster, index) in monsters" :key="index"
-          class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg mb-2">
-          <n-image :src="monster.image" width="50" height="50" object-fit="cover" />
-          <span class="flex-1">{{ monster.name }}</span>
-          <n-button type="primary" size="small" @click="$emit('edit', monster)">
-            <template #icon>
-              <n-icon>
-                <CreateOutline />
-              </n-icon>
-            </template>
-          </n-button>
-          <n-button type="error" size="small" @click="removeMonster(index)">
-            <template #icon>
-              <n-icon>
-                <TrashOutline />
-              </n-icon>
-            </template>
-          </n-button>
-        </div>
-      </n-flex>
-    </n-scrollbar>
+    <n-flex vertical class="flex-1 overflow-hidden">
+      <n-input
+        v-model:value="searchKeyword"
+        placeholder="搜索怪物名称或别名..."
+        clearable
+      />
+      <n-scrollbar>
+        <n-flex vertical>
+          <n-flex v-for="(monster, index) in filteredMonsters" :key="index" :wrap="false" justify="space-between" align="center"
+            size="small" class="p-3 bg-gray-50 rounded-lg mb-2">
+            <n-flex :wrap="false" align="center" size="small">
+              <n-image :src="monster.image" width="50" height="50" object-fit="cover" />
+              <span class="flex-1">{{ monster.name }}</span>
+            </n-flex>
+            <n-flex :wrap="false" align="center" size="small">
+              <n-button type="primary" size="small" @click="$emit('edit', monster)">
+                <template #icon>
+                  <n-icon>
+                    <CreateOutline />
+                  </n-icon>
+                </template>
+              </n-button>
+              <n-button type="error" size="small" @click="removeMonster(index)">
+                <template #icon>
+                  <n-icon>
+                    <TrashOutline />
+                  </n-icon>
+                </template>
+              </n-button>
+            </n-flex>
+          </n-flex>
+        </n-flex>
+      </n-scrollbar>
+    </n-flex>
   </n-card>
-</template> 
+</template>

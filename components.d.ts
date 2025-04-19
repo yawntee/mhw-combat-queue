@@ -36,6 +36,7 @@ declare module 'vue' {
     NSwitch: typeof import('naive-ui')['NSwitch']
     NUpload: typeof import('naive-ui')['NUpload']
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
+    NWatermark: typeof import('naive-ui')['NWatermark']
     QueuePanel: typeof import('./src/components/panels/QueuePanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -19,10 +19,7 @@ const QUEUE_KEY = 'mhw_queue'
 const isQueueVisible = ref(false)
 
 const getMonsterImage = computed(() => (content: string): string => {
-  const monster = props.monsters.find((m: Monster) =>
-    content.includes(m.name) ||
-    (m.aliases && m.aliases.some((alias: string) => content.includes(alias)))
-  )
+  const monster = props.monsters.find((m: Monster) => m.name === content)
   return monster?.image || DefaultMonsterImage
 })
 
