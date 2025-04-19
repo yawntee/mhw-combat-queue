@@ -1,0 +1,15 @@
+@use "sass:list";
+
+@function drawTextShadow($strokeSize, $strokeColor, $blur: 0) {
+  @if $strokeSize == 0 {
+    @return '';
+  }
+  $shadow: ();
+  @for $angle from 0 through 360 {
+    $radian: $angle * 1deg;
+    $x: cos($radian) * $strokeSize;
+    $y: sin($radian) * $strokeSize;
+    $shadow: list.append($shadow, $x + px $y + px $blur + px $strokeColor, comma);
+  }
+  @return $shadow;
+}
