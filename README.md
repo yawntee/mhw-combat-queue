@@ -1,4 +1,4 @@
-# mhw-combat-queue
+# 怪物猎人点怪机
 
 ## 项目简介
 这是一个用于B站直播怪物猎人时的弹幕互动工具。观众可以通过发送特定格式的弹幕来"点怪"，主播可以按照弹幕队列顺序进行挑战。
@@ -11,6 +11,8 @@
 - 可自行添加与移除怪物
 - 支持对点怪的粉丝牌/舰长等级进行限制
 - 支持导出/导入怪物列表，可导出后分享给他人
+
+![image](https://github.com/user-attachments/assets/213fb1ca-c784-4a62-a594-765c664c61c3)
 
 ## 快速开始
 前往[发布列表](https://github.com/yawntee/mhw-combat-queue/releases)下载
