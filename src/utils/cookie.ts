@@ -35,7 +35,7 @@ export async function pollForCookies(
     const checkCookies = async () => {
       try {
         // 获取所有cookies
-        const cookies = await window.webContents.session.cookies.get({});
+        const cookies = await window.webContents.session.cookies.get({url});
         
         // 检查目标cookie是否存在
         const targetCookieExists = cookies.some(cookie => cookie.name === targetCookieName);
