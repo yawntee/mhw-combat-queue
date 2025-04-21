@@ -11,6 +11,8 @@ import TestPanel from '../components/panels/TestPanel.vue'
 import { broadcastConfig, broadcastMonsters, broadcastQueue } from '../utils/broadcast'
 import { loadConfig, saveConfig } from '../utils/config'
 import { db } from '../utils/db'
+import { truncate } from 'lodash'
+import { findBestMatchMonster } from '@/utils/monster'
 
 const $message = useMessage()
 
@@ -29,7 +31,7 @@ const handleLiveMessage = async (event: any, data: any) => {
       face: data.face,
       guardLevel: data.guardLevel,
       medalLevel: data.medalLevel,
-      content,
+      content: findBestMatchMonster(monsters.value, content)?.name || truncate(content, { length: 8 }),
       timestamp: Date.now()
     }
 
@@ -128,22 +130,10 @@ const handleTestMessage = (data: any) => {
 
     <MonsterPanel v-model:monsters="monsters" @edit="handleEditMonster" />
     <QueuePanel v-model:queue="queue" :monsters="monsters" />
-
-    <n-watermark
-        content="炎天yawntee"
-        cross
-        fullscreen
-        :font-size="16"
-        :line-height="16"
-        :width="384"
-        :height="384"
-        :x-offset="12"
-        :y-offset="60"
-        :rotate="-15"
-    />
   </n-flex>
 
-  <MonsterModal v-model:show="showMonsterModal" :monster="selectedMonster" @update:monsters="monsters = $event" />
+  <MonsterModal v-model:show="showMonsterModal" :monsters="monsters" :monster="selectedMonster"
+    @update:monsters="monsters = $event" />
 </template>
 
 <style scoped>

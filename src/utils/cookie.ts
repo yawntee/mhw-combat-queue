@@ -14,7 +14,7 @@ export async function pollForCookies(
   targetCookieName: string,
   pollingIntervalMs = 1000
 ) {
-  return new Promise<string | false>((resolve, reject) => {
+  return new Promise<string | false>(async (resolve, reject) => {
     // 创建新窗口
     const window = new BrowserWindow({
       width: 1536,
@@ -60,6 +60,9 @@ export async function pollForCookies(
         reject(error);
       }
     };
+
+    // 清除cookie
+    await window.webContents.session.cookies.remove(url, targetCookieName);
 
     // 开始轮询
     pollingInterval = setInterval(checkCookies, pollingIntervalMs);
@@ -129,6 +132,29 @@ export async function loadCookiesFromFile(
         reject(err);
       } else {
         resolve(data);
+      }
+    });
+  });
+}
+
+/**
+ * 清除保存的Cookie文件
+ * @param filePath 文件路径，默认为用户数据目录下的cookies.txt
+ * @returns Promise<void>
+ */
+export async function clearCookies(filePath?: string): Promise<void> {
+  const targetPath = filePath || 'cookies.txt';
+  
+  if (!fs.existsSync(targetPath)) {
+    return;
+  }
+
+  return new Promise((resolve, reject) => {
+    fs.unlink(targetPath, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
       }
     });
   });

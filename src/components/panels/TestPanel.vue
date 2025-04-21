@@ -7,7 +7,7 @@ const emit = defineEmits<{
 
 const testData = reactive({
   username: '测试用户',
-  content: '雷狼龙',
+  content: '锁刃',
   guardLevel: 0,
   medalLevel: 0,
 })
