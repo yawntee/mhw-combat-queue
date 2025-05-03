@@ -7,6 +7,7 @@ export interface QueueConfig {
   queueTitle: string;
   textColor: string;
   strokeColor: string;
+  backgroundColor: string;
 }
 
 export interface QueueItem {

@@ -141,6 +141,7 @@ onUnmounted(() => {
   -webkit-app-region: drag;
   user-select: none;
   pointer-events: none;
+  background-color: v-bind('config.backgroundColor');
 }
 
 .queue-container {

@@ -26,6 +26,9 @@ watch(() => props.config, (newConfig) => {
       <n-form-item label="描边颜色">
         <n-color-picker v-model:value="config.strokeColor" />
       </n-form-item>
+      <n-form-item label="背景颜色">
+        <n-color-picker v-model:value="config.backgroundColor" />
+      </n-form-item>
       <n-form-item label="最低舰长等级">
         <n-input-number v-model:value="config.minGuardLevel" :min="0" class="w-full" />
       </n-form-item>

@@ -9,6 +9,7 @@ export const defaultQueueConfig: QueueConfig = {
   queueTitle: "发送 点怪<怪物名> 点怪",
   textColor: "#000000",
   strokeColor: "#ffffff",
+  backgroundColor: "#00000024",
 };
 
 export function loadConfig(): QueueConfig {
