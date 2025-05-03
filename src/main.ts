@@ -4,6 +4,7 @@ import started from "electron-squirrel-startup";
 import { loadCookiesFromFile, pollForCookies, saveCookiesToFile, clearCookies } from "./utils/cookie";
 import { connectWS } from "./utils/ws";
 import { toMessageData } from "tiny-bilibili-ws";
+import Store from 'electron-store';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -29,6 +30,14 @@ app.on('second-instance', () => {
     mainWindow.focus();
   }
 });
+
+// Initialize store for window size persistence
+const store = new Store<{
+  queueWindowSize: {
+    width: number;
+    height: number;
+  };
+}>();
 
 let mainWindow: BrowserWindow | null = null;
 let queueWindow: BrowserWindow | null = null;
@@ -71,20 +80,35 @@ function createMainWindow() {
 
 function createQueueWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  const savedSize = store.get('queueWindowSize', {
+    width: 400,
+    height: 600,
+  });
+
   queueWindow = new BrowserWindow({
     x: width,
     y: height,
-    width: 400,
-    height: 600,
+    ...savedSize,
     titleBarStyle: "hidden",
     transparent: true,
     minimizable: false,
+    roundedCorners: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       backgroundThrottling: false,
     },
   });
 
+  // Save window bounds when resized
+  queueWindow.on('resize', () => {
+    if (queueWindow) {
+      store.set('queueWindowSize', {
+        width: queueWindow.getBounds().width,
+        height: queueWindow.getBounds().height,
+      });
+    }
+  });
+  
   if (process.env.NODE_ENV === "development") {
     queueWindow.loadURL("http://localhost:5173/#/queue");
     queueWindow.webContents.openDevTools();
