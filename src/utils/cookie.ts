@@ -1,6 +1,4 @@
-import { BrowserWindow, screen } from 'electron';
-import * as fs from 'fs';
-import * as path from 'path';
+import {BrowserWindow} from 'electron';
 
 /**
  * 打开一个窗口并轮询指定Cookie，当目标Cookie存在时返回所有Cookie
@@ -79,83 +77,6 @@ export async function pollForCookies(
       clearInterval(pollingInterval);
       clearTimeout(timeout);
       resolve(false);
-    });
-  });
-}
-
-/**
- * 将Cookie字符串保存到本地文件
- * @param cookies Cookie字符串
- * @param filePath 文件保存路径，默认为用户数据目录下的cookies.txt
- * @returns Promise<void>
- */
-export async function saveCookiesToFile(
-  cookies: string,
-  filePath?: string
-): Promise<void> {
-  const targetPath = filePath || 'cookies.txt';
-
-  // 确保目录存在
-  const dir = path.dirname(targetPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
-  return new Promise((resolve, reject) => {
-    fs.writeFile(targetPath, cookies, 'utf8', (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
-/**
- * 从本地文件读取Cookie字符串
- * @param filePath 文件路径，默认为用户数据目录下的cookies.txt
- * @returns Promise<string> 返回读取到的Cookie字符串
- */
-export async function loadCookiesFromFile(
-  filePath?: string
-): Promise<string> {
-  const targetPath = filePath || 'cookies.txt';
-
-  if (!fs.existsSync(targetPath)) {
-    return '';
-  }
-
-  return new Promise((resolve, reject) => {
-    fs.readFile(targetPath, 'utf8', (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
-
-/**
- * 清除保存的Cookie文件
- * @param filePath 文件路径，默认为用户数据目录下的cookies.txt
- * @returns Promise<void>
- */
-export async function clearCookies(filePath?: string): Promise<void> {
-  const targetPath = filePath || 'cookies.txt';
-  
-  if (!fs.existsSync(targetPath)) {
-    return;
-  }
-
-  return new Promise((resolve, reject) => {
-    fs.unlink(targetPath, (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
     });
   });
 }

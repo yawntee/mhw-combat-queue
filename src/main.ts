@@ -1,9 +1,9 @@
-import { app, BrowserWindow, ipcMain, screen, dialog } from "electron";
+import {app, BrowserWindow, ipcMain, screen} from "electron";
 import * as path from "node:path";
 import started from "electron-squirrel-startup";
-import { loadCookiesFromFile, pollForCookies, saveCookiesToFile, clearCookies } from "./utils/cookie";
-import { connectWS } from "./utils/ws";
-import { toMessageData } from "tiny-bilibili-ws";
+import {pollForCookies} from "./utils/cookie";
+import {connectWS} from "./utils/ws";
+import {toMessageData} from "tiny-bilibili-ws";
 import Store from 'electron-store';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
@@ -33,6 +33,7 @@ app.on('second-instance', () => {
 
 // Initialize store for window size persistence
 const store = new Store<{
+  cookie: string;
   queueWindowSize: {
     width: number;
     height: number;
@@ -152,7 +153,7 @@ app.on("window-all-closed", () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 ipcMain.handle("connect", async (event, url, targetCookie, roomId) => {
-  let cookies = await loadCookiesFromFile();
+  let cookies = store.get("cookie") || "";
   let shouldRetry = false;
 
   try {
@@ -166,7 +167,7 @@ ipcMain.handle("connect", async (event, url, targetCookie, roomId) => {
   } catch (error) {
     console.error("Connection failed with existing cookies:", error);
     // 连接失败，清除cookie并重试
-    await clearCookies();
+    store.delete("cookie");
     shouldRetry = true;
   }
 
@@ -182,11 +183,11 @@ ipcMain.handle("connect", async (event, url, targetCookie, roomId) => {
       const live = await connectWS(roomId, cookies);
       setupLiveListener(live, event, roomId);
       // 连接成功后保存cookie
-      await saveCookiesToFile(cookies);
+      store.set("cookie", cookies);
       return true;
     } catch (error) {
       console.error("Connection failed after getting new cookies:", error);
-      await clearCookies();
+      store.delete("cookie");
       throw error;
     }
   }
