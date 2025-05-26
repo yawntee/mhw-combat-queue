@@ -28,7 +28,7 @@ const connectToRoom = async () => {
       room = url.pathname.split('/').pop() || room
     } finally { }
     isConnecting.value = true
-    window.electron?.connect('https://passport.bilibili.com/login', 'DedeUserID', Number(room))
+    window.electron?.connect('https://passport.bilibili.com/login', 'SESSDATA', Number(room))
       .then(res => {
         if (res) {
           isConnected.value = true
